@@ -4,6 +4,7 @@ class ChatApp {
         this.currentRoom = null;
         this.currentUsername = null;
         this.isConnected = false;
+        this.config = window.APP_CONFIG || {};
         
         this.initializeElements();
         this.bindEvents();
@@ -84,10 +85,24 @@ class ChatApp {
         }
     }
     
+    getWebSocketUrl() {
+        const roomSegment = encodeURIComponent(this.currentRoom);
+        const userSegment = encodeURIComponent(this.currentUsername);
+        const configuredBase = (this.config.wsBaseUrl || '').trim();
+
+        if (configuredBase) {
+            const baseUrl = new URL(configuredBase);
+            baseUrl.pathname = `/ws/${roomSegment}/${userSegment}`;
+            return baseUrl.toString();
+        }
+
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        return `${protocol}//${window.location.host}/ws/${roomSegment}/${userSegment}`;
+    }
+
     connectWebSocket() {
         return new Promise((resolve, reject) => {
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${protocol}//${window.location.host}/ws/${this.currentRoom}/${this.currentUsername}`;
+            const wsUrl = this.getWebSocketUrl();
             
             this.ws = new WebSocket(wsUrl);
             
@@ -109,6 +124,7 @@ class ChatApp {
             };
             
             this.ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
                 reject(error);
             };
             
