@@ -1,11 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Dict, List, Optional, Literal
 from datetime import datetime
 
 
 class ReactionData(BaseModel):
     """Represents reactions on a message with emoji to usernames mapping"""
-    emoji: Dict[str, List[str]] = {}  # {emoji: [usernames]}
+    emoji: Dict[str, List[str]] = Field(default_factory=dict)  # {emoji: [usernames]}
 
 
 class Message(BaseModel):
@@ -15,7 +15,7 @@ class Message(BaseModel):
     user: str
     content: Optional[str] = None
     timestamp: datetime
-    reactions: ReactionData = ReactionData()
+    reactions: ReactionData = Field(default_factory=ReactionData)
     online: Optional[List[str]] = None  # For join/leave messages
 
 
